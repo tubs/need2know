@@ -1,0 +1,29 @@
+Identifier = "need2know"
+
+Name = "NeedToKnow"
+
+Description = "Everything you need to know, and when"
+
+Author = "Tubs"
+Website = "none"
+Email = "need2know_rift@gmail.com"
+
+Version = "1"
+
+Environment = "2.3"
+
+RunOnStartup = {
+	"Core.lua",
+}
+
+Embed = {
+	LibUnitChange = true,
+}
+Dependencies = {
+	LibUnitChange = {"before", "required"},
+}
+
+SavedVariables = {
+	n2k_placement = "character",
+}
+
