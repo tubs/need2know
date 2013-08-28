@@ -31,23 +31,25 @@ all_track[5]["Coda of Distress"] = {also="<2>", who="target", kind="buff", id=ni
 all_track[5]["Riff"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.8, 0.8}, completion=0}
 all_track[5]["Verse of Agony"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.8, 0.0}, completion=0}
 --]]
---
+---[[
 all_track[2]["Precept of Refuge"] = {who="player", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
 all_track[2]["Bolt of Radiance"] = {who="player", kind="cd", id=nil, valid=false, color={0.7, 0.7, 0.0}, completion=0}
 
-all_track[1]["Lightning"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[1]["Massive Blow"] = {who="player", kind="cd", id=nil, valid=false, color={0.8, 0.0, 0.0}, completion=0}
-all_track[1]["Bolt of Radiance"] = {who="player", kind="cd", id=nil, valid=false, color={0.7, 0.7, 0.0}, completion=0}
-all_track[1]["Frostbite"] = {who="player", kind="buff", id=nil, valid=false, color={0.1, 0.1, 0.3}, completion=0}
+all_track[1]["Curse of Discord"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
+all_track[1]["Vex"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
+all_track[1]["Scourge"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
+all_track[1]["Sanction Heretic"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
+
+all_track[3]["Blessing of Flame"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
+all_track[3]["Healing Breath"] = {who="player", kind="cd", id=nil, valid=false, color={0.8, 0.0, 0.0}, completion=0}
 
 all_track[5]["Eruption of Life"] = {who="player", kind="buff", id=nil, valid=false, color={0.0, 0.4, 0.1}, completion=0}
 all_track[5]["Thorns of Ire"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
 all_track[5]["Essence Strike"] = {who="player", kind="cd", id=nil, valid=false, color={0.8, 0.0, 0.0}, completion=0}
 all_track[5]["Combined Effort"] = {who="player", kind="cd", id=nil, valid=false, color={0.7, 0.7, 0.0}, completion=0}
+all_track[5]["Resounding Blow"] = {who="player", kind="cd", id=nil, valid=false, color={0.2, 0.4, 0.2}, completion=0}
+--]]
 
-track = all_track[Inspect.TEMPORARY.Role()]
-print(Inspect.TEMPORARY.Role())
-print(track)
 
 local max_time = 8
 
@@ -97,6 +99,7 @@ local function create()
 	bar.timer:SetFontSize(12)
 	bar.text:SetHeight(bar.text:GetHeight())
 	bar.text:SetVisible(true)
+	bar.text:SetEffectGlow({colorR = 0, colorB = 0, colorG = 0, blurX = 0, blurY = 0})
 	bar.solid:SetVisible(false)
 
 	bar:SetVisible(true)
@@ -112,6 +115,7 @@ end
 
 local function init_track()
 	local last = nil
+	if not track then track = {} end
 	for name,t in pairs(track) do
 		if not t.bar then
 			local bar = create()
@@ -123,9 +127,9 @@ local function init_track()
 			end
 			bar.solid:SetBackgroundColor(unpack(t.color))
 			bar.text:SetText(name)
-			bar:SetVisible(true)
 			last = bar
 		end
+		t.bar:SetVisible(true)
 	end
 end
 
@@ -289,6 +293,7 @@ end
 
 
 local function role_changed(handle, slot)
+	print("role changed")
 	deinit_track()
 	track = all_track[slot]
 	init_track()
@@ -355,5 +360,6 @@ end
 Command.Event.Attach(Command.Slash.Register("n2k"), config, "config")
 
 
+track = all_track[Inspect.TEMPORARY.Role()]
 init_track()
 
