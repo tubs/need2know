@@ -25,5 +25,6 @@ Dependencies = {
 
 SavedVariables = {
 	n2k_placement = "character",
+	tracked_skills = "character",
 }
 

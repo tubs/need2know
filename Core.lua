@@ -1,56 +1,12 @@
+--local n2k_placement = {x=0, y=800}
+--
+--
+--
 local n2k_placement = {x=0, y=800}
-
 local all_track = {{}, {}, {}, {}, {}, {}, {}, {}}
 local track = nil
 local combo = 0
 local do_combo = false
-
---[[
-all_track[1]["Empowered Shot"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[1]["Shadow Fire"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[1]["Splinter Shot"] = {who="target", kind="buff", id=nil, valid=false, color={0.8, 0.0, 0.4}, completion=0}
-all_track[1]["Ace Shot"] = {who="target", kind="buff", id=nil, valid=false, color={0.7, 0.2, 0.0}, completion=0}
-
-all_track[4]["Motif of Bravery"] = {who="player", kind="buff", id=nil, valid=false, color={0.0, 0.8, 0.0}, completion=0}
-
-all_track[3]["Backstab"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[3]["Puncture"] = {who="target", kind="buff", id=nil, valid=false, color={0.5, 0.0, 0.0}, completion=0}
-all_track[3]["Impale"] = {who="target", kind="buff", id=nil, valid=false, color={0.8, 0.0, 0.0}, completion=0}
-all_track[3]["Expose Weakness"] = {who="player", kind="cd", id=nil, valid=false, color={0.5, 0.0, 0.5}, completion=0}
-all_track[3]["Thread of Death"] = {who="player", kind="cd", id=nil, valid=false, color={0.5, 0.1, 0.3}, completion=0}
-
-all_track[2]["Shadow Assault"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[2]["Shadow Blitz"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[2]["Phantom Blow"] = {who="player", kind="cd", id=nil, valid=false, color={0.4, 0.0, 0.4}, completion=0}
-all_track[2]["Rift Disturbance"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.4, 0.4}, completion=0}
-all_track[2]["Planar Vortex"] = {who="player", kind="buff", id=nil, valid=false, color={0.2, 0.4, 0.2}, completion=0}
-
-all_track[5]["Coda of Jeopardy"] = {also="<5>", who="target", kind="buff", id=nil, valid=false, color={0.9, 0.4, 0.0}, completion=0}
-all_track[5]["Coda of Cowardice"] = {also="<G>", who="target", kind="buff", id=nil, valid=false, color={0.8, 0.0, 0.3}, completion=0}
-all_track[5]["Coda of Distress"] = {also="<2>", who="target", kind="buff", id=nil, valid=false, color={0.7, 0.2, 0.2}, completion=0}
-all_track[5]["Riff"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.8, 0.8}, completion=0}
-all_track[5]["Verse of Agony"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.8, 0.0}, completion=0}
---]]
----[[
-all_track[2]["Precept of Refuge"] = {who="player", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[2]["Bolt of Radiance"] = {who="player", kind="cd", id=nil, valid=false, color={0.7, 0.7, 0.0}, completion=0}
-
-all_track[1]["Curse of Discord"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[1]["Vex"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[1]["Scourge"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[1]["Sanction Heretic"] = {who="player", kind="cd", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-
-all_track[3]["Blessing of Flame"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[3]["Healing Breath"] = {who="player", kind="cd", id=nil, valid=false, color={0.8, 0.0, 0.0}, completion=0}
-
-all_track[5]["Eruption of Life"] = {who="player", kind="buff", id=nil, valid=false, color={0.0, 0.4, 0.1}, completion=0}
-all_track[5]["Thorns of Ire"] = {who="target", kind="buff", id=nil, valid=false, color={0.0, 0.0, 0.4}, completion=0}
-all_track[5]["Essence Strike"] = {who="player", kind="cd", id=nil, valid=false, color={0.8, 0.0, 0.0}, completion=0}
-all_track[5]["Combined Effort"] = {who="player", kind="cd", id=nil, valid=false, color={0.7, 0.7, 0.0}, completion=0}
-all_track[5]["Resounding Blow"] = {who="player", kind="cd", id=nil, valid=false, color={0.2, 0.4, 0.2}, completion=0}
---]]
-
-
 local max_time = 8
 
 local context = UI.CreateContext("HUD")
@@ -58,17 +14,6 @@ local combo_icons = {}
 local combos = nil
 local player_id = Inspect.Unit.Lookup("player")
 local target_id = nil
-
-local function make_name(detail, t)
-	local s = detail.name
-	if t.also then
-		s = s .. " " .. t.also
-	end
-	if detail.stack then
-		s = s .. string.format("[%d]", detail.stack)
-	end
-	return s
-end
 
 local function create()
 	bar = UI.CreateFrame("Frame", "Bar", context)
@@ -106,13 +51,6 @@ local function create()
 
 	return bar
 end
-
-local function deinit_track()
-	for name,t in pairs(track) do
-		if t.bar then t.bar:SetVisible(false) end
-	end
-end
-
 local function init_track()
 	local last = nil
 	if not track then track = {} end
@@ -133,8 +71,48 @@ local function init_track()
 	end
 end
 
+local function fini(handle, addon)
+	if addon == "need2know" then
+		for _,t in pairs(all_track) do
+			for _,d in pairs(t) do
+				d.bar = nil
+				d.completion = 0
+			end
+		end
+		tracked_skills = all_track
+	end
+end
+
+local function init(handle, addon)
+	if addon == "need2know" then
+		if tracked_skills ~= nil then
+			all_track = tracked_skills
+			track = all_track[Inspect.TEMPORARY.Role()]
+			init_track()
+		end
+	end
+end
+
+Command.Event.Attach(Event.Addon.SavedVariables.Load.End, init, "init")
+Command.Event.Attach(Event.Addon.SavedVariables.Save.Begin, fini, "fini")
+
+local function make_name(detail, t)
+	local s = detail.name
+	if t.also then
+		s = s .. " " .. t.also
+	end
+	if detail.stack then
+		s = s .. string.format("[%d]", detail.stack)
+	end
+	return s
+end
 
 
+local function deinit_track()
+	for name,t in pairs(track) do
+		if t.bar then t.bar:SetVisible(false) end
+	end
+end
 
 local function refresh(time)
 end
@@ -293,7 +271,6 @@ end
 
 
 local function role_changed(handle, slot)
-	print("role changed")
 	deinit_track()
 	track = all_track[slot]
 	init_track()
@@ -357,9 +334,55 @@ for i=1,5 do
 	combo_icons[i] = c
 end
 
+local function del_buff(handle, cmd)
+	local name = cmd
+	if track[name] then
+		track[name] = nil
+		print("removed")
+	end
+end
+
+local function add_buff(handle, cmd)
+	local name, bar_type, who, rs, gs, bs = cmd:match("([^;]+);(%w+);(%w+);([%d%.]+);([%d%.]+);([%d%.]+)")
+	if name == nil or bar_type == nil or who == nil or rs == nil or gs == nil or bs == nil then
+		print(name)
+		print(bar_type)
+		print(who)
+		print(rs)
+		print(gs)
+		print(bs)
+
+		print("USAGE: /n2k_add name bar_type who red green blue")
+		return
+	end
+
+	local r = tonumber(rs)
+	local g = tonumber(gs)
+	local b = tonumber(bs)
+
+	if r == nil or g == nil or b == nil then
+		print("USAGE: /n2k_add name bar_type who red green blue")
+		return
+	end
+
+	if bar_type ~= "buff" and bar_type ~= "cd" then
+		print("bar_type = buff|cd")
+		return
+	end
+
+	if who ~= "player" and who ~= "target" then
+		print("player = player|target")
+		return
+	end
+
+	track[name] = {["kind"] = bar_type, ["who"] = who, ["color"] = {r, g, b}}
+	init_track()
+end
+
 Command.Event.Attach(Command.Slash.Register("n2k"), config, "config")
+Command.Event.Attach(Command.Slash.Register("n2k_add"), add_buff, "add_buff")
+Command.Event.Attach(Command.Slash.Register("n2k_del"), del_buff, "del_buff")
 
 
 track = all_track[Inspect.TEMPORARY.Role()]
-init_track()
 
