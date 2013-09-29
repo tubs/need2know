@@ -4,16 +4,41 @@
 --
 local n2k_placement = {x=0, y=800}
 local all_track = {{}, {}, {}, {}, {}, {}, {}, {}}
+
+-- table for current role (points to a table in all_track)
 local track = nil
+
+-- number of combo points 
 local combo = 0
+
+-- Enable/disable combo point tracking, dunno how to do this automatically, maybe look at name of class?
 local do_combo = false
 local max_time = 8
 
+-- ui context
 local context = UI.CreateContext("HUD")
+
+-- icons for combo points
 local combo_icons = {}
+
 local combos = nil
+
+-- id of the player's unit
 local player_id = Inspect.Unit.Lookup("player")
+
+-- id of the current target
 local target_id = nil
+
+local function make_name(detail, t)
+	local s = detail.name
+	if t.also then
+		s = s .. " " .. t.also
+	end
+	if detail.stack then
+		s = s .. string.format("[%d]", detail.stack)
+	end
+	return s
+end
 
 local function create()
 	bar = UI.CreateFrame("Frame", "Bar", context)
@@ -51,6 +76,13 @@ local function create()
 
 	return bar
 end
+
+local function deinit_track()
+	for name,t in pairs(track) do
+		if t.bar then t.bar:SetVisible(false) end
+	end
+end
+
 local function init_track()
 	local last = nil
 	if not track then track = {} end
@@ -96,23 +128,6 @@ end
 Command.Event.Attach(Event.Addon.SavedVariables.Load.End, init, "init")
 Command.Event.Attach(Event.Addon.SavedVariables.Save.Begin, fini, "fini")
 
-local function make_name(detail, t)
-	local s = detail.name
-	if t.also then
-		s = s .. " " .. t.also
-	end
-	if detail.stack then
-		s = s .. string.format("[%d]", detail.stack)
-	end
-	return s
-end
-
-
-local function deinit_track()
-	for name,t in pairs(track) do
-		if t.bar then t.bar:SetVisible(false) end
-	end
-end
 
 local function refresh(time)
 end
@@ -157,6 +172,11 @@ local cols = {
 	{1.0, 1.0, 0.0},
 	{0.0, 1.0, 0.0},
 }
+
+--[[
+Show/hide the correct number of combo icons.
+We use a special color for each combo icon indicating how close we are to capping.
+--]]
 local function set_combo_indicator(val)
 	for i=1,5 do
 		combo_icons[i]:SetVisible(i <= val)
@@ -165,6 +185,10 @@ local function set_combo_indicator(val)
 	end
 end
 
+--[[
+Called when an ability goes on cooldown.
+If we're tracking this cd make the bar visible and calculate when it will complete.
+--]]
 local function cd_start(handle, cooldowns)
 	local now = Inspect.Time.Frame()
 	local details = Inspect.Ability.New.Detail(cooldowns)
@@ -177,9 +201,17 @@ local function cd_start(handle, cooldowns)
 	end
 end
 
+--[[
+Probably should disable the bar in this function
+--]]
 local function cd_end(handle, cooldowns)
 end
 
+--[[
+Called when a buff is added to a unit.
+If it's a unit we care about and a buff we care about and we cast it:
+Enable the bar, make it visible, calculate when the buf will fall off.
+--]]
 local function add_buffs(handle, id, buffs)
 	if id ~= player_id and id ~= target_id then
 		return
@@ -197,6 +229,11 @@ local function add_buffs(handle, id, buffs)
 	end
 
 end
+
+--[[
+Called when a buff is removed from a unit.
+If we're tracking it, disable that bar.
+--]]
 local function remove_buffs(handle, id, buffs)
 	if id ~= player_id and id ~= target_id then
 		return
@@ -211,6 +248,10 @@ local function remove_buffs(handle, id, buffs)
 	end
 end
 
+--[[
+Called when something about a buff changes. Note: New stacks will call remove_buffs; add_buffs not this function.
+If we are tracking this buff, ensure all details we care about displaying are updated.
+--]]
 local function buffs_changed(handle, id, buffs)
 	if id ~= player_id and id ~= target_id then
 		return
@@ -230,6 +271,9 @@ local function buffs_changed(handle, id, buffs)
 	end
 end
 
+--[[
+Update who are target is, update the buffs/debuffs that we are tracking on "target" as well.
+--]]
 local function TargetChanged(handle, id)
 	target_id = id
 	for name,t in pairs(track) do
@@ -243,6 +287,9 @@ local function TargetChanged(handle, id)
 	end
 end
 
+--[[
+Player id has changed, so update player_id and combo_points
+--]]
 local function PlayerChanged(handle, id)
 	player_id = id
 	local details = Inspect.Unit.Detail(player_id)
@@ -251,12 +298,18 @@ local function PlayerChanged(handle, id)
 	end
 end
 
+--[[
+No idea :-(
+--]]
 local function UnitUnavailable(handle, tab)
 	if tab[player_id] then
 		PlayerChanged({}, player_id)
 	end
 end
 
+--[[
+Units are entering or exiting combat, add config to show bars only in combat.
+--]]
 local function combat_changed(handle, units)
 	--[[
 	for id,val in pairs(units) do
@@ -269,14 +322,19 @@ local function combat_changed(handle, units)
 	--]]
 end
 
-
+--[[
+Called when the current role changes (including on initialisation), deinit the current role
+and init the new role.
+--]]
 local function role_changed(handle, slot)
 	deinit_track()
 	track = all_track[slot]
 	init_track()
 end
 
-
+--[[
+Number of combo points have changed
+--]]
 local function combo_changed(handle, id)
 	for id,val in pairs(id) do
 		if id == player_id then
@@ -312,11 +370,11 @@ local function config(handle, cmd)
 	n2k_placement.x = x
 	n2k_placement.y = y
 	resync = true
-	refresh(0)
 
 end
 
 
+--Create the combopoint icons.
 for i=1,5 do
 	combos = UI.CreateFrame("Frame", "combo_icons", context)
 	combos:SetPoint("TOPCENTER", UIParent, "TOPCENTER", n2k_placement.x, n2k_placement.y - 30)
@@ -383,6 +441,6 @@ Command.Event.Attach(Command.Slash.Register("n2k"), config, "config")
 Command.Event.Attach(Command.Slash.Register("n2k_add"), add_buff, "add_buff")
 Command.Event.Attach(Command.Slash.Register("n2k_del"), del_buff, "del_buff")
 
-
+--init the current tracked spells to the player's current role.
 track = all_track[Inspect.TEMPORARY.Role()]
 
